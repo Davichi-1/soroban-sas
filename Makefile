@@ -17,7 +17,7 @@ CONTRACT_WASM := \
 	$(RELEASE_DIR)/soroban_sas_indexer.wasm \
 	$(RELEASE_DIR)/soroban_sas_cross_chain_verifier.wasm
 
-.PHONY: all help build build-contracts build-native test bench coverage gas-profile gas-dashboard smoke-local clean print-contract-artifacts \
+.PHONY: all help build build-contracts build-native test bench bench-attestations coverage gas-profile gas-dashboard smoke-local clean print-contract-artifacts \
 	fmt lint install-hooks localnet localnet-down deploy-local
 
 all: build test
@@ -29,6 +29,7 @@ help:
 	@echo "  build-native       Build native workspace binaries"
 	@echo "  test               Run cargo test across workspace"
 	@echo "  bench              Run cargo benchmarks"
+	@echo "  bench-attestations Run 10k-attestation-per-ledger benchmarks"
 	@echo "  coverage           Run cargo-tarpaulin and open HTML report locally"
 	@echo "  gas-profile        Run gas profiling tests and write JSON snapshot to gas_profile_history/"
 	@echo "  gas-dashboard      Render the ASCII gas history dashboard from gas_profile_history/"
@@ -104,6 +105,12 @@ deploy-local:
 
 bench:
 	$(CARGO) bench
+
+# Focused benchmark for the 10k-attestations-per-ledger performance target.
+# Runs the bench targets whose names match "attestations" (e.g. attestations_benchmark).
+# Use BENCH_FILTER to narrow further.
+bench-attestations:
+	$(CARGO) bench --bench attestations_benchmark $(if $(BENCH_FILTER),-- $(BENCH_FILTER))
 
 # Run the in-process gas profiling tests and write a JSON snapshot.
 # Use --test-threads=1 so the flush test always runs last.
